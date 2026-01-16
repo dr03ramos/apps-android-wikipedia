@@ -277,7 +277,7 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
             if (entity != null) {
                 _wikidataInfoState.value = Resource.Success(entity)
             } else {
-                _wikidataInfoState.value = Resource.Error(Exception("No Wikidata entity found"))
+                _wikidataInfoState.value = Resource.Error(Exception("No Wikidata entity found for '${pageTitle.displayText}'"))
             }
         }
     }
