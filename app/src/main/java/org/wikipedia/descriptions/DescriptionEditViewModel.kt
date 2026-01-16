@@ -267,12 +267,13 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
 
         // Post aliases edit if changed
         if (!wikidataAliases.isNullOrEmpty()) {
+            val parsedAliases = wikidataAliases.split(",").map { it.trim() }.filter { it.isNotEmpty() }
             ServiceFactory.get(Constants.wikidataWikiSite).postAliasesEdit(
                 language = languageCode,
                 useLang = languageCode,
                 site = pageTitle.wikiSite.dbName(),
                 title = pageTitle.prefixedText,
-                set = wikidataAliases.split(",").map { it.trim() }.filter { it.isNotEmpty() }.joinToString("|"),
+                set = parsedAliases.joinToString("|"),
                 add = null,
                 remove = null,
                 summary = editComment,

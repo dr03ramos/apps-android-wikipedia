@@ -283,8 +283,16 @@ class DescriptionEditView(context: Context, attrs: AttributeSet?) : LinearLayout
     }
 
     fun hasWikidataAliasesChanged(): Boolean {
-        val currentAliases = wikidataAliases?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
+        val currentAliases = parseAliases(wikidataAliases)
         return currentAliases != originalAliases
+    }
+
+    fun getParsedAliases(): List<String> {
+        return parseAliases(wikidataAliases)
+    }
+
+    private fun parseAliases(aliasesString: String?): List<String> {
+        return aliasesString?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
     }
 
     fun setEditAllowed(allowed: Boolean) {
