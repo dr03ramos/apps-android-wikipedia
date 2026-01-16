@@ -1675,6 +1675,7 @@
     <string name="wikidata_title_label">Title</string>
     <string name="wikidata_description_label">Description</string>
     <string name="wikidata_aliases_label">Alternate titles</string>
+    <string name="wikidata_aliases_helper">Separate multiple aliases with commas</string>
 
     <!-- Shareable reading lists -->
     <string name="shareable_reading_lists_import_dialog_title">Import shared reading list</string>

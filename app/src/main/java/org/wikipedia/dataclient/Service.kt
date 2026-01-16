@@ -540,6 +540,22 @@ interface Service {
         @Field("matags") tags: String? = null
     ): EntityPostResponse
 
+    @POST(MW_API_PREFIX + "action=wbsetaliases&errorlang=uselang")
+    @FormUrlEncoded
+    suspend fun postAliasesEdit(
+        @Field("language") language: String,
+        @Field("uselang") useLang: String,
+        @Field("site") site: String,
+        @Field("title") title: String,
+        @Field("set") newAliases: String?,
+        @Field("add") addAliases: String?,
+        @Field("remove") removeAliases: String?,
+        @Field("summary") summary: String?,
+        @Field("token") token: String,
+        @Field("assert") user: String?,
+        @Field("matags") tags: String? = null
+    ): EntityPostResponse
+
     @POST(MW_API_PREFIX + "action=wbeditentity&errorlang=uselang")
     @FormUrlEncoded
     suspend fun postEditEntity(

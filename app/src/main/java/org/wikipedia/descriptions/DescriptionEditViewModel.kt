@@ -105,6 +105,8 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
     }
 
     fun postDescription(currentDescription: String,
+                        wikidataLabel: String?,
+                        wikidataAliases: String?,
                         editComment: String?,
                         editTags: String?,
                         captchaId: String?,
@@ -130,7 +132,7 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
                 // should be written directly to the article instead of Wikidata.
                 postDescriptionToArticle(csrfToken, currentDescription, editComment, editTags, captchaId, captchaWord)
             } else {
-                postDescriptionToWikidata(csrfToken, currentDescription, editComment, editTags)
+                postDescriptionToWikidata(csrfToken, currentDescription, wikidataLabel, wikidataAliases, editComment, editTags)
             }
 
             _postDescriptionState.value = Resource.Success(response)
@@ -199,6 +201,8 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
 
     private suspend fun postDescriptionToWikidata(csrfToken: String,
                                                   currentDescription: String,
+                                                  wikidataLabel: String?,
+                                                  wikidataAliases: String?,
                                                   editComment: String?,
                                                   editTags: String?): EntityPostResponse {
         val wikiSectionInfoResponse = ServiceFactory.get(pageTitle.wikiSite).getWikiTextForSectionWithInfo(pageTitle.prefixedText, 0)
@@ -218,7 +222,8 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
             }
         }
 
-        return if (action == DescriptionEditActivity.Action.ADD_CAPTION ||
+        // Post description edit
+        val descResponse = if (action == DescriptionEditActivity.Action.ADD_CAPTION ||
             action == DescriptionEditActivity.Action.TRANSLATE_CAPTION) {
             ServiceFactory.get(Constants.commonsWikiSite).postLabelEdit(
                 language = languageCode,
@@ -244,6 +249,40 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
                 tags = editTags
             )
         }
+
+        // Post label edit if changed
+        if (!wikidataLabel.isNullOrEmpty()) {
+            ServiceFactory.get(Constants.wikidataWikiSite).postLabelEdit(
+                language = languageCode,
+                useLang = languageCode,
+                site = pageTitle.wikiSite.dbName(),
+                title = pageTitle.prefixedText,
+                newDescription = wikidataLabel,
+                summary = editComment,
+                token = csrfToken,
+                user = AccountUtil.assertUser,
+                tags = editTags
+            )
+        }
+
+        // Post aliases edit if changed
+        if (!wikidataAliases.isNullOrEmpty()) {
+            ServiceFactory.get(Constants.wikidataWikiSite).postAliasesEdit(
+                language = languageCode,
+                useLang = languageCode,
+                site = pageTitle.wikiSite.dbName(),
+                title = pageTitle.prefixedText,
+                set = wikidataAliases.split(",").map { it.trim() }.filter { it.isNotEmpty() }.joinToString("|"),
+                add = null,
+                remove = null,
+                summary = editComment,
+                token = csrfToken,
+                user = AccountUtil.assertUser,
+                tags = editTags
+            )
+        }
+
+        return descResponse
     }
 
     fun shouldWriteToLocalWiki(): Boolean {

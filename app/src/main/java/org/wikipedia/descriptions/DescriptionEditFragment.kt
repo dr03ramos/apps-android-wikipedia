@@ -232,6 +232,10 @@ class DescriptionEditFragment : Fragment() {
                                     if (error.badLoginState() || error.badToken()) {
                                         viewModel.postDescription(
                                             currentDescription = binding.fragmentDescriptionEditView.description.orEmpty(),
+                                            wikidataLabel = if (binding.fragmentDescriptionEditView.hasWikidataLabelChanged()) 
+                                                binding.fragmentDescriptionEditView.wikidataLabel else null,
+                                            wikidataAliases = if (binding.fragmentDescriptionEditView.hasWikidataAliasesChanged()) 
+                                                binding.fragmentDescriptionEditView.wikidataAliases else null,
                                             editComment = getEditComment(),
                                             editTags = getEditTags(),
                                             captchaId = if (captchaHandler.isActive) captchaHandler.captchaId() else null,
@@ -356,6 +360,10 @@ class DescriptionEditFragment : Fragment() {
                 EditAttemptStepEvent.logSaveAttempt(viewModel.pageTitle, EditAttemptStepEvent.INTERFACE_OTHER)
                 viewModel.postDescription(
                     currentDescription = binding.fragmentDescriptionEditView.description.orEmpty(),
+                    wikidataLabel = if (binding.fragmentDescriptionEditView.hasWikidataLabelChanged()) 
+                        binding.fragmentDescriptionEditView.wikidataLabel else null,
+                    wikidataAliases = if (binding.fragmentDescriptionEditView.hasWikidataAliasesChanged()) 
+                        binding.fragmentDescriptionEditView.wikidataAliases else null,
                     editComment = getEditComment(),
                     editTags = getEditTags(),
                     captchaId = if (captchaHandler.isActive) captchaHandler.captchaId() else null,
