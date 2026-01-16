@@ -82,6 +82,11 @@ enum class PageActionItem constructor(val id: Int,
         override fun select(cb: Callback) {
             cb.onViewOnMapSelected()
         }
+    },
+    EDIT_WIKIDATA(14, R.id.page_edit_wikidata, R.string.action_item_edit_wikidata, R.drawable.ic_wikidata_logo, false) {
+        override fun select(cb: Callback) {
+            cb.onEditWikidataSelected()
+        }
     };
 
     abstract fun select(cb: Callback)
@@ -107,12 +112,13 @@ enum class PageActionItem constructor(val id: Int,
         fun onCategoriesSelected()
         fun onEditArticleSelected()
         fun onViewOnMapSelected()
+        fun onEditWikidataSelected()
         fun forwardClick()
     }
 
     companion object {
         val DEFAULT_TOOLBAR_LIST = listOf(SAVE, LANGUAGE, FIND_IN_ARTICLE, THEME, CONTENTS).map { it.id }
-        val DEFAULT_OVERFLOW_MENU_LIST = listOf(SHARE, ADD_TO_WATCHLIST, VIEW_TALK_PAGE, VIEW_EDIT_HISTORY, VIEW_ON_MAP, NEW_TAB, EXPLORE, CATEGORIES, EDIT_ARTICLE).map { it.id }
+        val DEFAULT_OVERFLOW_MENU_LIST = listOf(SHARE, ADD_TO_WATCHLIST, VIEW_TALK_PAGE, VIEW_EDIT_HISTORY, VIEW_ON_MAP, EDIT_WIKIDATA, NEW_TAB, EXPLORE, CATEGORIES, EDIT_ARTICLE).map { it.id }
 
         fun find(id: Int): PageActionItem {
             return entries.find { id == it.id || id == it.viewId } ?: entries[0]

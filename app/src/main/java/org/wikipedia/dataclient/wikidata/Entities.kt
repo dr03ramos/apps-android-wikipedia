@@ -25,6 +25,7 @@ class Entities : MwResponse() {
         val id: String = ""
         private val labels: JsonElement? = null
         private val descriptions: JsonElement? = null
+        private val aliases: JsonElement? = null
         private val sitelinks: JsonElement? = null
         private val statements: JsonElement? = null
         val missing: JsonElement? = null
@@ -57,6 +58,14 @@ class Entities : MwResponse() {
         fun getSiteLinks(): Map<String, SiteLink> {
             return if (sitelinks != null && sitelinks !is JsonArray) {
                 JsonUtil.json.decodeFromJsonElement(sitelinks)
+            } else {
+                emptyMap()
+            }
+        }
+
+        fun getAliases(): Map<String, List<Label>> {
+            return if (aliases != null && aliases !is JsonArray) {
+                JsonUtil.json.decodeFromJsonElement(aliases)
             } else {
                 emptyMap()
             }

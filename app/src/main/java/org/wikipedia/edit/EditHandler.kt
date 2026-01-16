@@ -1,14 +1,9 @@
 package org.wikipedia.edit
 
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import androidx.appcompat.widget.PopupMenu
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
 import org.wikipedia.Constants
-import org.wikipedia.R
 import org.wikipedia.bridge.CommunicationBridge
 import org.wikipedia.bridge.CommunicationBridge.JSEventListener
 import org.wikipedia.descriptions.DescriptionEditUtil
@@ -33,37 +28,9 @@ class EditHandler(private val fragment: PageFragment, bridge: CommunicationBridg
         currentPage?.let {
             if (messageType == TYPE_EDIT_SECTION) {
                 val sectionId = messagePayload?.run { this[PAYLOAD_SECTION_ID]?.jsonPrimitive?.int } ?: 0
-                if (sectionId == 0 && DescriptionEditUtil.isEditAllowed(it) && it.isArticle) {
-                    val tempView = View(fragment.requireContext())
-                    tempView.x = fragment.webView.touchStartX
-                    tempView.y = fragment.webView.touchStartY
-                    (fragment.view as ViewGroup).addView(tempView)
-                    val menu = PopupMenu(fragment.requireContext(), tempView, 0, 0, R.style.PagePopupMenu)
-                    menu.menuInflater.inflate(R.menu.menu_page_header_edit, menu.menu)
-                    menu.setOnMenuItemClickListener(EditMenuClickListener())
-                    menu.setOnDismissListener { (fragment.view as? ViewGroup)?.removeView(tempView) }
-                    menu.show()
-                } else {
-                    startEditingSection(sectionId, null)
-                }
+                startEditingSection(sectionId, null)
             } else if (messageType == TYPE_ADD_TITLE_DESCRIPTION && DescriptionEditUtil.isEditAllowed(it)) {
                 fragment.verifyBeforeEditingDescription(null, Constants.InvokeSource.PAGE_DESCRIPTION_CTA)
-            }
-        }
-    }
-
-    private inner class EditMenuClickListener : PopupMenu.OnMenuItemClickListener {
-        override fun onMenuItemClick(item: MenuItem): Boolean {
-            return when (item.itemId) {
-                R.id.menu_page_header_edit_description -> {
-                    fragment.verifyBeforeEditingDescription(null, Constants.InvokeSource.PAGE_EDIT_PENCIL)
-                    true
-                }
-                R.id.menu_page_header_edit_lead_section -> {
-                    startEditingSection(0, null)
-                    true
-                }
-                else -> false
             }
         }
     }

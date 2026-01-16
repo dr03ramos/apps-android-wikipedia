@@ -500,14 +500,14 @@ interface Service {
         @Query("property") property: String?
     ): Claims
 
-    @GET(MW_API_PREFIX + "action=wbgetentities&props=descriptions|labels|sitelinks")
+    @GET(MW_API_PREFIX + "action=wbgetentities&props=descriptions|labels|aliases|sitelinks")
     suspend fun getWikidataLabelsAndDescriptions(
         @Query("ids") idList: String,
         @Query("languages") languages: String? = null,
         @Query("sitefilter") siteFilter: String? = null
     ): Entities
 
-    @GET(MW_API_PREFIX + "action=wbgetentities&props=descriptions|labels")
+    @GET(MW_API_PREFIX + "action=wbgetentities&props=descriptions|labels|aliases")
     suspend fun getWikidataDescription(@Query("titles") titles: String,
                                        @Query("sites") sites: String,
                                        @Query("languages") langCode: String): Entities
