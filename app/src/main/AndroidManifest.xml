@@ -215,11 +215,6 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
-            android:name=".wikidata.WikidataEditActivity"
-            android:configChanges="orientation|screenSize"
-            android:windowSoftInputMode="adjustResize" />
-
-        <activity
             android:name=".search.SearchActivity"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/AppTheme.Splash"

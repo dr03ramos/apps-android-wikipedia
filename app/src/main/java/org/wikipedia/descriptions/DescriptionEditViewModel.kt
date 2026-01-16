@@ -55,6 +55,9 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
     private val _waitForRevisionState = MutableStateFlow(Resource<Boolean>())
     val waitForRevisionState = _waitForRevisionState.asStateFlow()
 
+    private val _wikidataInfoState = MutableStateFlow(Resource<org.wikipedia.dataclient.wikidata.Entities.Entity>())
+    val wikidataInfoState = _wikidataInfoState.asStateFlow()
+
     fun loadPageSummary() {
         viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
             L.e(throwable)
@@ -256,6 +259,26 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
         } else {
             // add new description template
             "{{${DESCRIPTION_TEMPLATES[0]}|$newDescription}}\n$articleText".trimIndent()
+        }
+    }
+
+    fun loadWikidataInfo() {
+        viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
+            L.e(throwable)
+            _wikidataInfoState.value = Resource.Error(throwable)
+        }) {
+            _wikidataInfoState.value = Resource.Loading()
+            val response = ServiceFactory.get(WikipediaApp.instance.wikiSite).getWikidataDescription(
+                pageTitle.prefixedText,
+                pageTitle.wikiSite.dbName(),
+                WikipediaApp.instance.appOrSystemLanguageCode
+            )
+            val entity = response.first
+            if (entity != null) {
+                _wikidataInfoState.value = Resource.Success(entity)
+            } else {
+                _wikidataInfoState.value = Resource.Error(Exception("No Wikidata entity found"))
+            }
         }
     }
 

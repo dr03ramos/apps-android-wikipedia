@@ -245,6 +245,23 @@ class DescriptionEditView(context: Context, attrs: AttributeSet?) : LinearLayout
         binding.viewDescriptionEditReadArticleBarContainer.setOnClickListener { performReadArticleClick() }
     }
 
+    fun setWikidataInfo(entity: org.wikipedia.dataclient.wikidata.Entities.Entity, languageCode: String) {
+        // Display Wikidata title (label)
+        val label = entity.getLabels()[languageCode]?.value
+        if (!label.isNullOrEmpty()) {
+            binding.viewDescriptionEditWikidataContainer.visibility = VISIBLE
+            binding.viewDescriptionEditWikidataTitle.text = label
+        }
+        
+        // Display Wikidata aliases
+        val aliases = entity.getAliases()[languageCode]
+        if (!aliases.isNullOrEmpty()) {
+            binding.viewDescriptionEditWikidataAliasesLabel.visibility = VISIBLE
+            binding.viewDescriptionEditWikidataAliases.visibility = VISIBLE
+            binding.viewDescriptionEditWikidataAliases.text = aliases.joinToString(", ") { it.value }
+        }
+    }
+
     fun setEditAllowed(allowed: Boolean) {
         enableSaveButton(enabled = allowed, saveInProgress = false)
         binding.viewDescriptionEditTextLayout.isEnabled = allowed

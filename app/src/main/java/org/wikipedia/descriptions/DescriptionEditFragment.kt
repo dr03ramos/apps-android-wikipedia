@@ -260,6 +260,23 @@ class DescriptionEditFragment : Fragment() {
                         }
                     }
                 }
+                launch {
+                    viewModel.wikidataInfoState.collect {
+                        when (it) {
+                            is Resource.Loading -> {
+                                // Loading handled by main progress bar
+                            }
+                            is Resource.Success -> {
+                                it.data?.let { entity ->
+                                    binding.fragmentDescriptionEditView.setWikidataInfo(entity, viewModel.pageTitle.wikiSite.languageCode)
+                                }
+                            }
+                            is Resource.Error -> {
+                                // Silently ignore errors for now, just don't show wikidata info
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -280,11 +297,13 @@ class DescriptionEditFragment : Fragment() {
     private fun loadPageSummaryIfNeeded(savedInstanceState: Bundle?) {
         binding.fragmentDescriptionEditView.showProgressBar(true)
         if ((viewModel.invokeSource == InvokeSource.PAGE_ACTIVITY || viewModel.invokeSource == InvokeSource.PAGE_EDIT_PENCIL ||
-                    viewModel.invokeSource == InvokeSource.PAGE_EDIT_HIGHLIGHT) && viewModel.sourceSummary?.extractHtml.isNullOrEmpty()) {
+                    viewModel.invokeSource == InvokeSource.PAGE_EDIT_HIGHLIGHT || viewModel.invokeSource == InvokeSource.PAGE_OVERFLOW_MENU) && viewModel.sourceSummary?.extractHtml.isNullOrEmpty()) {
             viewModel.loadPageSummary()
         } else {
             setUpEditView(savedInstanceState)
         }
+        // Load Wikidata information
+        viewModel.loadWikidataInfo()
     }
 
     private fun setUpEditView(savedInstanceState: Bundle?) {

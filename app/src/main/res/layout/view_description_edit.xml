@@ -142,6 +142,61 @@
 
                         </LinearLayout>
 
+                        <LinearLayout
+                            android:id="@+id/view_description_edit_wikidata_container"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingStart="28dp"
+                            android:paddingTop="15dp"
+                            android:paddingEnd="28dp"
+                            android:paddingBottom="15dp"
+                            android:visibility="gone"
+                            tools:visibility="visible">
+
+                            <TextView
+                                android:id="@+id/view_description_edit_wikidata_title_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif-medium"
+                                android:text="@string/wikidata_title_label"
+                                android:textColor="?attr/placeholder_color"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/view_description_edit_wikidata_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:layout_marginBottom="16dp"
+                                android:textColor="?attr/primary_color"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                tools:text="Example Title" />
+
+                            <TextView
+                                android:id="@+id/view_description_edit_wikidata_aliases_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif-medium"
+                                android:text="@string/wikidata_aliases_label"
+                                android:textColor="?attr/placeholder_color"
+                                android:textSize="12sp"
+                                android:visibility="gone" />
+
+                            <TextView
+                                android:id="@+id/view_description_edit_wikidata_aliases"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:textColor="?attr/secondary_color"
+                                android:textSize="14sp"
+                                android:visibility="gone"
+                                tools:text="Alias 1, Alias 2, Alias 3"
+                                tools:visibility="visible" />
+
+                        </LinearLayout>
+
                         <FrameLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"

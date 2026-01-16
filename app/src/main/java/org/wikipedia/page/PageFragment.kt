@@ -1491,7 +1491,7 @@ class PageFragment : Fragment(), BackPressedHandler, CommunicationBridge.Communi
 
         override fun onEditWikidataSelected() {
             title?.let {
-                requireActivity().startActivity(org.wikipedia.wikidata.WikidataEditActivity.newIntent(requireContext(), it))
+                verifyBeforeEditingDescription(null, Constants.InvokeSource.PAGE_OVERFLOW_MENU)
             }
         }
 
