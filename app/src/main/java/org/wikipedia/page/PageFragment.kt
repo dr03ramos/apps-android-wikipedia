@@ -1489,6 +1489,12 @@ class PageFragment : Fragment(), BackPressedHandler, CommunicationBridge.Communi
             }
         }
 
+        override fun onEditWikidataSelected() {
+            title?.let {
+                verifyBeforeEditingDescription(null, Constants.InvokeSource.PAGE_OVERFLOW_MENU)
+            }
+        }
+
         override fun forwardClick() {
             goForward()
             articleInteractionEvent?.logForwardClick()

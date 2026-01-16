@@ -53,6 +53,8 @@ class DescriptionEditView(context: Context, attrs: AttributeSet?) : LinearLayout
     private val languageDetectRunnable = Runnable { mlKitLanguageDetector.detectLanguageFromText(binding.viewDescriptionEditText.text.toString()) }
     private val textValidateRunnable = Runnable { validateText() }
     private var originalDescription: String? = null
+    private var originalLabel: String? = null
+    private var originalAliases: List<String> = emptyList()
     private var isTranslationEdit = false
     private var isLanguageWrong = false
     private var isTextValid = false
@@ -69,6 +71,18 @@ class DescriptionEditView(context: Context, attrs: AttributeSet?) : LinearLayout
             if (!text.isNullOrEmpty()) {
                 binding.viewDescriptionEditText.setSelection(text.length)
             }
+        }
+
+    var wikidataLabel: String?
+        get() = binding.viewDescriptionEditWikidataTitle.text?.toString()?.trim()
+        set(text) {
+            binding.viewDescriptionEditWikidataTitle.setText(text)
+        }
+
+    var wikidataAliases: String?
+        get() = binding.viewDescriptionEditWikidataAliases.text?.toString()?.trim()
+        set(text) {
+            binding.viewDescriptionEditWikidataAliases.setText(text)
         }
 
     init {
@@ -243,6 +257,42 @@ class DescriptionEditView(context: Context, attrs: AttributeSet?) : LinearLayout
 
         binding.viewDescriptionEditReadArticleBarContainer.setSummary(pageSummaryForEdit)
         binding.viewDescriptionEditReadArticleBarContainer.setOnClickListener { performReadArticleClick() }
+    }
+
+    fun setWikidataInfo(entity: org.wikipedia.dataclient.wikidata.Entities.Entity, languageCode: String) {
+        // Display Wikidata title (label)
+        val label = entity.getLabels()[languageCode]?.value
+        if (!label.isNullOrEmpty()) {
+            binding.viewDescriptionEditWikidataContainer.visibility = VISIBLE
+            wikidataLabel = label
+            originalLabel = label
+        }
+        
+        // Display Wikidata aliases
+        val aliases = entity.getAliases()[languageCode]
+        if (!aliases.isNullOrEmpty()) {
+            binding.viewDescriptionEditWikidataAliasesLayout.visibility = VISIBLE
+            val aliasesText = aliases.joinToString(", ") { it.value }
+            wikidataAliases = aliasesText
+            originalAliases = aliases.map { it.value }
+        }
+    }
+
+    fun hasWikidataLabelChanged(): Boolean {
+        return wikidataLabel != originalLabel
+    }
+
+    fun hasWikidataAliasesChanged(): Boolean {
+        val currentAliases = parseAliases(wikidataAliases)
+        return currentAliases != originalAliases
+    }
+
+    fun getParsedAliases(): List<String> {
+        return parseAliases(wikidataAliases)
+    }
+
+    private fun parseAliases(aliasesString: String?): List<String> {
+        return aliasesString?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
     }
 
     fun setEditAllowed(allowed: Boolean) {

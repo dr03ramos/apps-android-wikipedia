@@ -55,6 +55,9 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
     private val _waitForRevisionState = MutableStateFlow(Resource<Boolean>())
     val waitForRevisionState = _waitForRevisionState.asStateFlow()
 
+    private val _wikidataInfoState = MutableStateFlow(Resource<org.wikipedia.dataclient.wikidata.Entities.Entity>())
+    val wikidataInfoState = _wikidataInfoState.asStateFlow()
+
     fun loadPageSummary() {
         viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
             L.e(throwable)
@@ -102,6 +105,8 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
     }
 
     fun postDescription(currentDescription: String,
+                        wikidataLabel: String?,
+                        wikidataAliases: String?,
                         editComment: String?,
                         editTags: String?,
                         captchaId: String?,
@@ -127,7 +132,7 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
                 // should be written directly to the article instead of Wikidata.
                 postDescriptionToArticle(csrfToken, currentDescription, editComment, editTags, captchaId, captchaWord)
             } else {
-                postDescriptionToWikidata(csrfToken, currentDescription, editComment, editTags)
+                postDescriptionToWikidata(csrfToken, currentDescription, wikidataLabel, wikidataAliases, editComment, editTags)
             }
 
             _postDescriptionState.value = Resource.Success(response)
@@ -196,6 +201,8 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
 
     private suspend fun postDescriptionToWikidata(csrfToken: String,
                                                   currentDescription: String,
+                                                  wikidataLabel: String?,
+                                                  wikidataAliases: String?,
                                                   editComment: String?,
                                                   editTags: String?): EntityPostResponse {
         val wikiSectionInfoResponse = ServiceFactory.get(pageTitle.wikiSite).getWikiTextForSectionWithInfo(pageTitle.prefixedText, 0)
@@ -215,7 +222,8 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
             }
         }
 
-        return if (action == DescriptionEditActivity.Action.ADD_CAPTION ||
+        // Post description edit
+        val descResponse = if (action == DescriptionEditActivity.Action.ADD_CAPTION ||
             action == DescriptionEditActivity.Action.TRANSLATE_CAPTION) {
             ServiceFactory.get(Constants.commonsWikiSite).postLabelEdit(
                 language = languageCode,
@@ -241,6 +249,41 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
                 tags = editTags
             )
         }
+
+        // Post label edit if changed
+        if (!wikidataLabel.isNullOrEmpty()) {
+            ServiceFactory.get(Constants.wikidataWikiSite).postLabelEdit(
+                language = languageCode,
+                useLang = languageCode,
+                site = pageTitle.wikiSite.dbName(),
+                title = pageTitle.prefixedText,
+                newDescription = wikidataLabel,
+                summary = editComment,
+                token = csrfToken,
+                user = AccountUtil.assertUser,
+                tags = editTags
+            )
+        }
+
+        // Post aliases edit if changed
+        if (!wikidataAliases.isNullOrEmpty()) {
+            val parsedAliases = wikidataAliases.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+            ServiceFactory.get(Constants.wikidataWikiSite).postAliasesEdit(
+                language = languageCode,
+                useLang = languageCode,
+                site = pageTitle.wikiSite.dbName(),
+                title = pageTitle.prefixedText,
+                set = parsedAliases.joinToString("|"),
+                add = null,
+                remove = null,
+                summary = editComment,
+                token = csrfToken,
+                user = AccountUtil.assertUser,
+                tags = editTags
+            )
+        }
+
+        return descResponse
     }
 
     fun shouldWriteToLocalWiki(): Boolean {
@@ -256,6 +299,26 @@ class DescriptionEditViewModel(savedStateHandle: SavedStateHandle) : ViewModel()
         } else {
             // add new description template
             "{{${DESCRIPTION_TEMPLATES[0]}|$newDescription}}\n$articleText".trimIndent()
+        }
+    }
+
+    fun loadWikidataInfo() {
+        viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
+            L.e(throwable)
+            _wikidataInfoState.value = Resource.Error(throwable)
+        }) {
+            _wikidataInfoState.value = Resource.Loading()
+            val response = ServiceFactory.get(WikipediaApp.instance.wikiSite).getWikidataDescription(
+                pageTitle.prefixedText,
+                pageTitle.wikiSite.dbName(),
+                WikipediaApp.instance.appOrSystemLanguageCode
+            )
+            val entity = response.first
+            if (entity != null) {
+                _wikidataInfoState.value = Resource.Success(entity)
+            } else {
+                _wikidataInfoState.value = Resource.Error(Exception("No Wikidata entity found for '${pageTitle.displayText}'"))
+            }
         }
     }
 

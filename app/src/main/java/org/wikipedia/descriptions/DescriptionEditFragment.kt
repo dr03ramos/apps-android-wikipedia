@@ -232,6 +232,10 @@ class DescriptionEditFragment : Fragment() {
                                     if (error.badLoginState() || error.badToken()) {
                                         viewModel.postDescription(
                                             currentDescription = binding.fragmentDescriptionEditView.description.orEmpty(),
+                                            wikidataLabel = if (binding.fragmentDescriptionEditView.hasWikidataLabelChanged()) 
+                                                binding.fragmentDescriptionEditView.wikidataLabel else null,
+                                            wikidataAliases = if (binding.fragmentDescriptionEditView.hasWikidataAliasesChanged()) 
+                                                binding.fragmentDescriptionEditView.wikidataAliases else null,
                                             editComment = getEditComment(),
                                             editTags = getEditTags(),
                                             captchaId = if (captchaHandler.isActive) captchaHandler.captchaId() else null,
@@ -260,6 +264,24 @@ class DescriptionEditFragment : Fragment() {
                         }
                     }
                 }
+                launch {
+                    viewModel.wikidataInfoState.collect {
+                        when (it) {
+                            is Resource.Loading -> {
+                                // Loading handled by main progress bar
+                            }
+                            is Resource.Success -> {
+                                it.data?.let { entity ->
+                                    binding.fragmentDescriptionEditView.setWikidataInfo(entity, viewModel.pageTitle.wikiSite.languageCode)
+                                }
+                            }
+                            is Resource.Error -> {
+                                // TODO: Consider showing a subtle message or fallback UI when Wikidata info is unavailable
+                                // For now, silently fail as the core description editing still works
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -279,12 +301,21 @@ class DescriptionEditFragment : Fragment() {
 
     private fun loadPageSummaryIfNeeded(savedInstanceState: Bundle?) {
         binding.fragmentDescriptionEditView.showProgressBar(true)
-        if ((viewModel.invokeSource == InvokeSource.PAGE_ACTIVITY || viewModel.invokeSource == InvokeSource.PAGE_EDIT_PENCIL ||
-                    viewModel.invokeSource == InvokeSource.PAGE_EDIT_HIGHLIGHT) && viewModel.sourceSummary?.extractHtml.isNullOrEmpty()) {
+        if (shouldLoadPageSummary()) {
             viewModel.loadPageSummary()
         } else {
             setUpEditView(savedInstanceState)
         }
+        // Load Wikidata information
+        viewModel.loadWikidataInfo()
+    }
+
+    private fun shouldLoadPageSummary(): Boolean {
+        return (viewModel.invokeSource == InvokeSource.PAGE_ACTIVITY || 
+                viewModel.invokeSource == InvokeSource.PAGE_EDIT_PENCIL ||
+                viewModel.invokeSource == InvokeSource.PAGE_EDIT_HIGHLIGHT || 
+                viewModel.invokeSource == InvokeSource.PAGE_OVERFLOW_MENU) && 
+                viewModel.sourceSummary?.extractHtml.isNullOrEmpty()
     }
 
     private fun setUpEditView(savedInstanceState: Bundle?) {
@@ -329,6 +360,10 @@ class DescriptionEditFragment : Fragment() {
                 EditAttemptStepEvent.logSaveAttempt(viewModel.pageTitle, EditAttemptStepEvent.INTERFACE_OTHER)
                 viewModel.postDescription(
                     currentDescription = binding.fragmentDescriptionEditView.description.orEmpty(),
+                    wikidataLabel = if (binding.fragmentDescriptionEditView.hasWikidataLabelChanged()) 
+                        binding.fragmentDescriptionEditView.wikidataLabel else null,
+                    wikidataAliases = if (binding.fragmentDescriptionEditView.hasWikidataAliasesChanged()) 
+                        binding.fragmentDescriptionEditView.wikidataAliases else null,
                     editComment = getEditComment(),
                     editTags = getEditTags(),
                     captchaId = if (captchaHandler.isActive) captchaHandler.captchaId() else null,

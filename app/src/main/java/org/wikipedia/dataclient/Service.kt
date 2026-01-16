@@ -500,14 +500,14 @@ interface Service {
         @Query("property") property: String?
     ): Claims
 
-    @GET(MW_API_PREFIX + "action=wbgetentities&props=descriptions|labels|sitelinks")
+    @GET(MW_API_PREFIX + "action=wbgetentities&props=descriptions|labels|aliases|sitelinks")
     suspend fun getWikidataLabelsAndDescriptions(
         @Query("ids") idList: String,
         @Query("languages") languages: String? = null,
         @Query("sitefilter") siteFilter: String? = null
     ): Entities
 
-    @GET(MW_API_PREFIX + "action=wbgetentities&props=descriptions|labels")
+    @GET(MW_API_PREFIX + "action=wbgetentities&props=descriptions|labels|aliases")
     suspend fun getWikidataDescription(@Query("titles") titles: String,
                                        @Query("sites") sites: String,
                                        @Query("languages") langCode: String): Entities
@@ -534,6 +534,22 @@ interface Service {
         @Field("site") site: String,
         @Field("title") title: String,
         @Field("value") newDescription: String,
+        @Field("summary") summary: String?,
+        @Field("token") token: String,
+        @Field("assert") user: String?,
+        @Field("matags") tags: String? = null
+    ): EntityPostResponse
+
+    @POST(MW_API_PREFIX + "action=wbsetaliases&errorlang=uselang")
+    @FormUrlEncoded
+    suspend fun postAliasesEdit(
+        @Field("language") language: String,
+        @Field("uselang") useLang: String,
+        @Field("site") site: String,
+        @Field("title") title: String,
+        @Field("set") newAliases: String?,
+        @Field("add") addAliases: String?,
+        @Field("remove") removeAliases: String?,
         @Field("summary") summary: String?,
         @Field("token") token: String,
         @Field("assert") user: String?,
